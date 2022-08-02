@@ -7,49 +7,54 @@ with ZipFile("/Users/hassandanial/W/weatherfiles.zip", 'r') as zip_file:
     # Extract all the contents of zip file in current directory
     zip_file.extractall()
 
-dir_list = [f for f in os.listdir(
-    "./weatherfiles") if f.endswith('.txt')]
+DIRECTORIES_LIST = [file_in_folder for file_in_folder in os.listdir(
+    "./weatherfiles") if file_in_folder.endswith('.txt')]
 
-Years = []
-Yearwithmonth = []
-for file in dir_list:
+YEARS = []
+YEAR_WITH_MONTH = []
+# Filtering the years present in databse to test values for each year.
+for file in DIRECTORIES_LIST:
     if(len(file.split("_")) > 2):
         year = (file.split("_")[2])
-        if(year in Years):
-            ItemNumber = Years.index((year))
+        if(year in YEARS):
+            year_in_list = YEARS.index((year))
         else:
-            Years.append(year)
-            ItemNumber = Years.index((year))
-for file in dir_list:
+            YEARS.append(year)
+            year_in_list = YEARS.index((year))
+# Filtering the months with year present in databse to test every possible month input for each year.
+for file in DIRECTORIES_LIST:
     if(len(file.split("_")) > 2):
         year = (file.split("_")[2])
         month = (file.split("_")[3].split(".")[0])
-        if((year, month) in Yearwithmonth):
-            ItemNumber = Yearwithmonth.index((year, month))
+        if((year, month) in YEAR_WITH_MONTH):
+            year_and_month_in_list = YEAR_WITH_MONTH.index((year, month))
         else:
-            Yearwithmonth.append((year, month))
-            ItemNumber = Yearwithmonth.index((year, month))
+            YEAR_WITH_MONTH.append((year, month))
+            year_and_month_in_list = YEAR_WITH_MONTH.index((year, month))
+
+del year
 
 
 def test_temperature_humidity_calculator_of_year():
     max_value_in_max_temp = float("-inf")
     min_value_in_min_temp = float("inf")
     humidity_max = float("-inf")
-    List = []
-    for x in Years:
-        for file in dir_list:
-            if(str(x) in file):
+    temperature_humidity_values_of_one_year = []
+    for year in YEARS:
+        for file in DIRECTORIES_LIST:
+            if(str(year) in file):
 
-                f = open("./weatherfiles/"+file)
+                read_object = open("./weatherfiles/"+file)
 
-                for line in f.readlines()[1:]:
-                    seperate_date_data = line.rstrip().split(",")[:11]
+                for line in read_object.readlines()[1:]:
+                    seperate_date_data = weatherman.get_convert_read_file_content_lines_to_list(
+                        line)
 
-                    max_temperature_value = weatherman.integer_conversion(
+                    max_temperature_value = weatherman.convert_to_int(
                         seperate_date_data[1])
-                    min_temperature_value = weatherman.integer_conversion(
+                    min_temperature_value = weatherman.convert_to_int(
                         seperate_date_data[3])
-                    humidity = weatherman.integer_conversion(
+                    humidity = weatherman.convert_to_int(
                         seperate_date_data[7])
                     if(max_temperature_value > max_value_in_max_temp):
                         max_value_in_max_temp = max_temperature_value
@@ -57,46 +62,42 @@ def test_temperature_humidity_calculator_of_year():
                         min_value_in_min_temp = min_temperature_value
                     if(humidity > humidity_max):
                         humidity_max = humidity
-
-        print(max_value_in_max_temp, min_value_in_min_temp, humidity_max)
-        List = weatherman.temperature_humidity_calculator_of_year(
-            x, dir_list)
-        print(List)
-        assert int(List[0]) == max_value_in_max_temp and int(
-            List[1]) == min_value_in_min_temp and int(List[2]) == humidity_max
+        # assert will keep the test running until it recieves false until then
+        # assert keep assuring that values are equal
+        temperature_humidity_values_of_one_year = weatherman.get_temperature_humidity_of_a_year(
+            year, DIRECTORIES_LIST)
+        assert temperature_humidity_values_of_one_year[0][0] == max_value_in_max_temp and temperature_humidity_values_of_one_year[
+            1][0] == min_value_in_min_temp and temperature_humidity_values_of_one_year[2][0] == humidity_max
         max_value_in_max_temp = float("-inf")
         min_value_in_min_temp = float("inf")
         humidity_max = float("-inf")
 
 
 def test_average_temperature_humidity_calculator_of_month():
-    maxTemperature = 0
-    minTemperature = 0
+    max_temperature_values_sum = 0
+    min_temperature_values_sum = 0
     humidity = 0
     number_of_days_in_month = 0
-    for x in Yearwithmonth:
-        for file in dir_list:
-            if(x[0]+"_"+x[1] in file):
-                f = open("./weatherfiles/"+file)
-                for line in f.readlines()[1:]:
-                    seperate_date_data = line.rstrip().split(",")[:10]
-                    maxTemperature += weatherman.integer_conversion(
+    for year_and_month in YEAR_WITH_MONTH:
+        for file in DIRECTORIES_LIST:
+            if(year_and_month[0]+"_"+year_and_month[1] in file):
+                read_object = open("./weatherfiles/"+file)
+                for line in read_object.readlines()[1:]:
+                    seperate_date_data = weatherman.get_convert_read_file_content_lines_to_list(
+                        line)
+                    max_temperature_values_sum += weatherman.convert_to_int(
                         seperate_date_data[1])
-                    minTemperature += weatherman.integer_conversion(
+                    min_temperature_values_sum += weatherman.convert_to_int(
                         seperate_date_data[3])
-                    humidity += weatherman.integer_conversion(
+                    humidity += weatherman.convert_to_int(
                         seperate_date_data[8])
                     number_of_days_in_month = number_of_days_in_month+1
                 break
-
-        print(maxTemperature/number_of_days_in_month, minTemperature /
-              number_of_days_in_month, humidity/number_of_days_in_month)
-        List = weatherman.average_temperature_humidity_calculator_of_month(
-            x[0], weatherman.months.index(x[1]), dir_list)
-        print(List)
-        assert (List[0]) == (maxTemperature/number_of_days_in_month) and (
-            List[1]) == (minTemperature/number_of_days_in_month) and (List[2]) == (humidity/number_of_days_in_month)
-        maxTemperature = 0
-        minTemperature = 0
+        average_max_min_temperature_and_humidity = weatherman.get_average_temperature_humidity_of_month(
+            year_and_month[0], weatherman.MONTHS.index(year_and_month[1]), DIRECTORIES_LIST)
+        assert (average_max_min_temperature_and_humidity[0]) == (max_temperature_values_sum/number_of_days_in_month) and (
+            average_max_min_temperature_and_humidity[1]) == (min_temperature_values_sum/number_of_days_in_month) and (average_max_min_temperature_and_humidity[2]) == (humidity/number_of_days_in_month)
+        max_temperature_values_sum = 0
+        min_temperature_values_sum = 0
         humidity = 0
         number_of_days_in_month = 0
