@@ -1,0 +1,6 @@
+__MACOSX
+weatherfiles
+virtualEnvironment
+__pycache__
+.DS_Store
+.pytest_cache

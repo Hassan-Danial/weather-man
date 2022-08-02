@@ -19,14 +19,14 @@ def integer_conversion(s):
 
 
 def temperature_humidity_calculator_of_year(year, dir_list):
-    """Search through the files names, only open those files which match 
+    """Search through the files names, only open those files which match
     with our input and only parse through those files.
 
     Now the only the data which is use full is considered all data values
-    which are of no use in are program are neglected only values required 
+    which are of no use in are program are neglected only values required
     in our program are used like at seperate_date_data[1] at index 1 max
-    temperature values are present and at every loop iteration will give 
-    us new value of new day, to find out the maxand min values the data 
+    temperature values are present and at every loop iteration will give
+    us new value of new day, to find out the maxand min values the data
     values are compared with each other,
     """
     max_value_in_max_temp = (float("-inf"), "")
@@ -52,24 +52,13 @@ def temperature_humidity_calculator_of_year(year, dir_list):
                     min_value_in_min_temp = min_temperature_value, seperate_date_data[0]
                 if(humidity > huimidity_max[0]):
                     huimidity_max = humidity, seperate_date_data[0]
-
-    date = max_value_in_max_temp[1].split("-")
-    print("Highest Temperature: "+str(max_value_in_max_temp[0]) +
-          "C"+" "+months[int(date[1])]+" "+date[2])
-    date = min_value_in_min_temp[1].split("-")
-    print("Lowest Temperature: "+str(min_value_in_min_temp[0]) +
-          "C"+" "+months[int(date[1])]+" "+date[2])
-    date = huimidity_max[1].split("-")
-    print("Highest Temperature: "+str(huimidity_max[0]) +
-          "%"+" "+months[int(date[1])]+" "+date[2])
-    del seperate_date_data
-    gc.collect()
+    return [str(max_value_in_max_temp), str(min_value_in_min_temp), str(huimidity_max)]
 
 
 def average_temperature_humidity_calculator_of_month(year, month, dir_list):
-    """" As the for loop at every iteration will give us new max and min 
-    temperature values, the addition of all the values and counting the 
-    number of lines in the file will give us the days in month which 
+    """" As the for loop at every iteration will give us new max and min
+    temperature values, the addition of all the values and counting the
+    number of lines in the file will give us the days in month which
     also give us the total number of days to find average of temperature
     """
     maxTemperature = 0
@@ -77,7 +66,7 @@ def average_temperature_humidity_calculator_of_month(year, month, dir_list):
     humidity = 0
     number_of_days_in_month = 0
     for file in dir_list:
-        if(year+"_"+(months[int(month)]) in file):
+        if(year+"_"+months[int(month)] in file):
             f = open("./weatherfiles/"+file)
             for line in f.readlines()[1:]:
                 seperate_date_data = line.rstrip().split(",")[:10]
@@ -87,19 +76,14 @@ def average_temperature_humidity_calculator_of_month(year, month, dir_list):
                     seperate_date_data[3])
                 humidity += integer_conversion(
                     seperate_date_data[8])
-                number_of_days_in_month = number_of_days_in_month+1
+                number_of_days_in_month += 1
             break
-
-    print('Highest Average: '+str(maxTemperature/number_of_days_in_month)+" "+"C")
-    print("Lowest Average: "+str(minTemperature/number_of_days_in_month)+" "+"C")
-    print("Average Mean Humidity: "+str(humidity/number_of_days_in_month)+" "+"%")
-    del seperate_date_data
-    gc.collect()
+    return [maxTemperature/number_of_days_in_month, minTemperature/number_of_days_in_month, humidity/number_of_days_in_month]
 
 
 def bar_chart_of_temperature_everyday_of_month(year, month, dir_list):
     """ After searching through all the files names in dir_list, just open that
-    file which contains monthly data of input month. After seperate the first 
+    file which contains monthly data of input month. After seperate the first
     line containing weather data variables names and filtering only data values.
     """
     min_temperature_value_of_a_month = 0
@@ -110,7 +94,6 @@ def bar_chart_of_temperature_everyday_of_month(year, month, dir_list):
     for file in dir_list:
         if(year+"_"+month_name in file):
             f = open("./weatherfiles/"+file)
-            print(year+" "+month_name)
             for line in f.readlines()[1:]:
                 seperate_date_data = line.rstrip().split(",")[:10]
                 max_temperature_value_of_a_month = integer_conversion(
@@ -137,9 +120,9 @@ def bar_chart_of_temperature_everyday_of_month(year, month, dir_list):
 
 
 def bar_chart_of_temperature_everyday_of_month_in_one_line(year, month, dir_list):
-    """Searching for the year and month in files list and only opening that 
-    specific file and saving weather data vlues in List and perform 
-    calculations on List, after performing calculations deleting the used 
+    """Searching for the year and month in files list and only opening that
+    specific file and saving weather data vlues in List and perform
+    calculations on List, after performing calculations deleting the used
     variables, data structures and free memeory using Garbage Collector
     """
     min_temperature_value_of_a_month = 0
@@ -150,7 +133,6 @@ def bar_chart_of_temperature_everyday_of_month_in_one_line(year, month, dir_list
     for file in dir_list:
         if(year+"_"+month_name) in file:
             f = open("./weatherfiles/"+file)
-            print(year+" "+month_name)
             for line in f.readlines()[1:]:
                 seperate_date_data = line.rstrip().split(",")[:10]
                 max_temperature_value_of_a_month = integer_conversion(
@@ -205,21 +187,21 @@ def main():
 
             dir_list = os.listdir("./weatherfiles")
         elif opt in ['-e']:
-            temperature_humidity_calculator_of_year(arg, dir_list)
+            print(temperature_humidity_calculator_of_year(arg, dir_list))
             print("")
         elif opt in ['-a']:
             month = (arg.split("/")[1])
             year = arg.split("/")[0]
-            average_temperature_humidity_calculator_of_month(
-                year, (month), dir_list)
+            print(average_temperature_humidity_calculator_of_month(
+                year, (month), dir_list))
             print("")
         elif opt in ["-c"]:
             if(arg.split("/")[1][0] == '0'):
                 # Spliting the month string to get month and year
                 month = int(arg.split("/")[1])
                 year = arg.split("/")[0]
-                bar_chart_of_temperature_everyday_of_month_in_one_line(
-                    year, str(month), dir_list)
+                print(bar_chart_of_temperature_everyday_of_month_in_one_line(
+                    year, str(month), dir_list))
                 print("")
             else:
                 # Spliting the month string to get month and year
